@@ -149,11 +149,9 @@ class _TrackingPageState extends State<TrackingPage> {
                           final trackingProvider = context
                               .read<TrackingProvider>();
 
-                          // Ambil data detail dari tracking (LOCAL)
                           final detail = trackingProvider.getById(item.id);
 
                           if (detail?.detailData != null) {
-                            // Prefill form
                             sewaProvider.loadForEdit(
                               detail!.detailData!,
                               item.id,
@@ -253,7 +251,7 @@ class _TrackingPageState extends State<TrackingPage> {
     );
   }
 
-  // ⭐ HANDLERS
+  
 
   void _handleEdit(BuildContext context, String id) {
     // TODO: Navigate to edit page

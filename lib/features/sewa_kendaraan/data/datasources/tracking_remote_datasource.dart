@@ -7,7 +7,6 @@ abstract class TrackingRemoteDatasource {
   Future<void> cancelSubmission(String id);
   Future<String> downloadPdf(String id);
 
-  // ⭐ HAPUS yang aneh-aneh, pakai yang ini aja
   Future<TrackingItemModel> createTrackingFromData({
     required String id,
     required String status,
@@ -19,7 +18,6 @@ abstract class TrackingRemoteDatasource {
 }
 
 class TrackingRemoteDatasourceImpl implements TrackingRemoteDatasource {
-  // ⭐ LOCAL STORAGE - Simulasi database
   final List<TrackingItemModel> _localDatabase = [];
 
   TrackingRemoteDatasourceImpl();
@@ -100,13 +98,12 @@ class TrackingRemoteDatasourceImpl implements TrackingRemoteDatasource {
       showDetail: true,
     );
 
-    _localDatabase.insert(0, newItem); // Pakai insert biar muncul di depan
+    _localDatabase.insert(0, newItem); 
     print('✅ Created tracking item: $id');
 
     return newItem;
   }
 
-  // ⭐ HELPER: Clear all data (untuk testing)
   void clearAll() {
     _localDatabase.clear();
     print('🗑️ Cleared all tracking items');

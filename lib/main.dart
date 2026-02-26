@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vehicle_rental/core/constants/api_constanst.dart';
 import 'package:vehicle_rental/features/sewa_kendaraan/data/datasources/sewa_kendaraan_remote_datasource.dart';
-import 'package:vehicle_rental/features/sewa_kendaraan/data/datasources/tracking_remode_datasource.dart';
+import 'package:vehicle_rental/features/sewa_kendaraan/data/datasources/tracking_remote_datasource.dart';
 import 'package:vehicle_rental/features/sewa_kendaraan/data/repositories/sewa_kendaraan_repositori_impl.dart';
 import 'package:vehicle_rental/features/sewa_kendaraan/data/repositories/tracking_repositori_impl.dart';
 import 'package:vehicle_rental/features/sewa_kendaraan/presentation/pages/welcome_page.dart';
@@ -10,8 +12,18 @@ import 'package:vehicle_rental/features/sewa_kendaraan/presentation/providers/tr
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  final dio = Dio(BaseOptions(
+    baseUrl: ApiConstants.baseUrl,
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  ));
 
-  final sewaKendaraanDataSource = SewaKendaraanDataSourceImpl();
+  final sewaKendaraanDataSource = SewaKendaraanDataSourceImpl(dio: dio);
   final trackingDataSource = TrackingRemoteDatasourceImpl();
 
   final trackingRepository = TrackingRepositoryImpl(

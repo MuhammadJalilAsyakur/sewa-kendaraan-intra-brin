@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:vehicle_rental/core/constants/api_constanst.dart';
 import 'package:vehicle_rental/features/sewa_kendaraan/data/models/sewa_kendaraan_model.dart';
 import 'package:vehicle_rental/features/sewa_kendaraan/domain/entities/sewa_kendaraan.dart';
 import 'dart:async';
@@ -10,20 +12,13 @@ abstract class SewaKendaraanRemoteDatasource {
 }
 
 class SewaKendaraanDataSourceImpl implements SewaKendaraanRemoteDatasource {
+  final Dio dio;
   final _submissionStream = BehaviorSubject<SewaKendaraanModel?>();
 
   Stream<SewaKendaraanModel?> watchLatestSubmission() =>
       _submissionStream.stream;
 
-  @override
-  Future<void> submitSewaKendaraan(SewaKendaraanModel model) async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Simulate printing payload to console
-    print("Submitting to API: ${model.toJson()}");
-
-    _submissionStream.add(model);
-  }
+  SewaKendaraanDataSourceImpl({required this.dio});
 
   @override
   Future<DataPemohon> getDataPemohon() async {
@@ -38,7 +33,11 @@ class SewaKendaraanDataSourceImpl implements SewaKendaraanRemoteDatasource {
 
   Future<List<SewaKendaraanModel>> getHistory() async {
     await Future.delayed(const Duration(seconds: 1));
+    // final response = await dio.get(ApiConstants.sewaKendaraan);
 
+    // return (response.data as List)
+    //     .map((e) => SewaKendaraanModel.fromJson(e))
+    //     .toList();
     return [
       SewaKendaraanModel(
         dataPemohon: const DataPemohonModel(
@@ -69,8 +68,51 @@ class SewaKendaraanDataSourceImpl implements SewaKendaraanRemoteDatasource {
     ];
   }
 
+  // @override
+  // Future<void> submitSewaKendaraan(SewaKendaraanModel model) async {
+  //   await dio.post(
+  //     ApiConstants.sewaKendaraan,
+  //     data: {
+  //       'mst_kawasan_id': model.administrasiInfo.kawasan,
+  //       'nm_kegiatan': model.kegiatanDanTujuan.namaKegiatan,
+  //       'tgl_mulai_pinjam': model.waktuPeminjaman.tanggalMulaiPinjam
+  //           ?.toIso8601String(),
+  //       'tgl_akhir_pinjam': model.waktuPeminjaman.tanggalSelesaiPinjam
+  //           ?.toIso8601String(),
+  //       'tujuan': model.kegiatanDanTujuan.tujuanPerjalanan,
+  //       'mst_katalog_id': null,
+  //       'mst_proses_id': null,
+  //       'mst_tusi_id': null,
+  //       'mst_kendaraan_id': null,
+  //       'mst_pengemudi_id': null,
+  //     },
+  //   );
+  //   _submissionStream.add(model);
+  // }
+
+  @override
+  Future<void> submitSewaKendaraan(SewaKendaraanModel model) async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Simulate printing payload to console
+    print("Submitting to API: ${model.toJson()}");
+
+    _submissionStream.add(model);
+  }
+
   @override
   Future<void> updateSewaKendaraan(String id, SewaKendaraan data) async {
+    // await dio.put(
+    //   '${ApiConstants.sewaKendaraan}/$id',
+    //   data: {
+    //     'nm_kegiatan': data.kegiatanDanTujuan.namaKegiatan,
+    //     'tujuan': data.kegiatanDanTujuan.tujuanPerjalanan,
+    //     'tgl_mulai_pinjam': data.waktuPeminjaman.tanggalMulaiPinjam
+    //         ?.toIso8601String(),
+    //     'tgl_akhir_pinjam': data.waktuPeminjaman.tanggalSelesaiPinjam
+    //         ?.toIso8601String(),
+    //   },
+    // );
     print('✏️ UPDATE LOCAL ONLY (API belum ada) - ID: $id');
   }
 }
