@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:vehicle_rental/core/constants/api_constanst.dart';
-import 'package:vehicle_rental/features/sewa_kendaraan/data/datasources/sewa_kendaraan_remote_datasource.dart';
-import 'package:vehicle_rental/features/sewa_kendaraan/data/repositories/sewa_kendaraan_repositori_impl.dart';
-import 'package:vehicle_rental/features/sewa_kendaraan/domain/repositories/sewa_kendaraan_repository.dart';
-import 'package:vehicle_rental/features/sewa_kendaraan/presentation/providers/sewa_kendaraan_provider.dart';
+import 'package:vehicle_rental/features/civitas/data/datasources/sewa_kendaraan_remote_datasource.dart';
+import 'package:vehicle_rental/features/civitas/data/repositories/sewa_kendaraan_repositori_impl.dart';
+import 'package:vehicle_rental/features/civitas/domain/repositories/sewa_kendaraan_repository.dart';
+import 'package:vehicle_rental/features/civitas/presentation/providers/sewa_kendaraan_provider.dart';
 
 final sl = GetIt.instance;
 
