@@ -20,188 +20,205 @@ class TrackingCard extends StatelessWidget {
 
   Color _statusColor(String status) {
     switch (status) {
-      case "Menunggu Persetujuan":
-        return const Color(0xFFFFA726); // Orange
-      case "Disetujui":
-        return const Color(0xFF2ECC71); // Green
-      case "Ditolak":
-        return const Color(0xFFE74C3C); // Red
+      case 'Disetujui':
+        return const Color(0xFF2E7D32);
+      case 'Ditolak':
+        return const Color(0xFFC62828);
       default:
-        return Colors.grey;
+        return const Color(0xFFE65100);
+    }
+  }
+
+  Color _statusBgColor(String status) {
+    switch (status) {
+      case 'Disetujui':
+        return const Color(0xFFE8F5E9);
+      case 'Ditolak':
+        return const Color(0xFFFFEBEE);
+      default:
+        return const Color(0xFFFFF3E0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _statusColor(trackingItem.status),
-              borderRadius: BorderRadius.circular(6),
+    return GestureDetector(
+      onTap: onViewDetail, // tap card → masuk detail
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-            child: Text(
-              trackingItem.status,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: status + tanggal
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _statusBgColor(trackingItem.status),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      trackingItem.status,
+                      style: TextStyle(
+                        color: _statusColor(trackingItem.status),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    DateFormat(
+                      'dd MMM yyyy',
+                    ).format(trackingItem.tanggalPengajuan),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                  ),
+                ],
               ),
-            ),
+              const SizedBox(height: 12),
+
+              // Judul
+              Text(
+                trackingItem.judul,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Info rows
+              _InfoRow(
+                icon: Icons.notes_outlined,
+                label: trackingItem.keperluan,
+              ),
+              const SizedBox(height: 4),
+              _InfoRow(
+                icon: Icons.calendar_today_outlined,
+                label: trackingItem.periode,
+              ),
+
+              const SizedBox(height: 14),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+
+              // Action buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Detail selalu tampil
+                  _ActionButton(
+                    label: 'Detail',
+                    icon: Icons.info_outline_rounded,
+                    color: const Color(0xFF1565C0),
+                    onTap: onViewDetail,
+                  ),
+                  if (trackingItem.canEdit) ...[
+                    const SizedBox(width: 8),
+                    _ActionButton(
+                      label: 'Edit',
+                      icon: Icons.edit_outlined,
+                      color: const Color(0xFF6A1B9A),
+                      onTap: onEdit,
+                    ),
+                  ],
+                  if (trackingItem.canCancel) ...[
+                    const SizedBox(width: 8),
+                    _ActionButton(
+                      label: 'Batalkan',
+                      icon: Icons.cancel_outlined,
+                      color: const Color(0xFFC62828),
+                      onTap: onCancel,
+                    ),
+                  ],
+                  if (trackingItem.canViewPdf) ...[
+                    const SizedBox(width: 8),
+                    _ActionButton(
+                      label: 'PDF',
+                      icon: Icons.picture_as_pdf_outlined,
+                      color: Colors.grey.shade600,
+                      onTap: onViewPdf,
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-
-          // Tanggal Pengajuan
-          Text(
-            DateFormat('dd MMM yyyy').format(trackingItem.tanggalPengajuan),
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Judul Permohonan
-          Text(
-            trackingItem.judul,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-
-          // Keperluan
-          Text(
-            "Keperluan: ${trackingItem.keperluan}",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 2),
-
-          // Periode Peminjaman
-          Text(
-            "Periode Peminjamaan: ${trackingItem.periode}",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Action Buttons
-          _buildActionButtons(),
-        ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildActionButtons() {
-    List<Widget> buttons = [];
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
 
-    if (trackingItem.canEdit) {
-      buttons.add(
-        _buildButton(
-          text: "Edit",
-          color: const Color(0xFF6A4FB6),
-          icon: Icons.edit,
-          onPressed: onEdit,
-        ),
-      );
-    }
+  const _InfoRow({required this.icon, required this.label});
 
-    if (trackingItem.canCancel) {
-      buttons.add(
-        _buildButton(
-          text: "Batalkan",
-          color: const Color(0xFFE74C3C),
-          icon: Icons.close,
-          onPressed: onCancel,
-        ),
-      );
-    }
-
-    if (trackingItem.canViewPdf) {
-      buttons.add(
-        _buildButton(
-          text: "Lihat PDF",
-          color: const Color(0xFF00BAD1),
-          icon: Icons.picture_as_pdf,
-          onPressed: onViewPdf,
-        ),
-      );
-    }
-
-    if (trackingItem.canViewDetail) {
-      buttons.add(
-        _buildButton(
-          text: "Lihat Detail",
-          color: const Color(0xFF00BAD1),
-          icon: Icons.info_outline,
-          onPressed: onViewDetail,
-        ),
-      );
-    }
-
+  @override
+  Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.end,
-          children: buttons,
+        Icon(icon, size: 14, color: Colors.grey.shade400),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildButton({
-    required String text,
-    required Color color,
-    required IconData icon,
-    VoidCallback? onPressed,
-  }) {
+class _ActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
+
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: onPressed ?? () {},
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-        ),
         elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      icon: Icon(icon, size: 16),
+      onPressed: onTap,
+      icon: Icon(icon, color: Colors.white, size: 15),
       label: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 13),
       ),
     );
   }

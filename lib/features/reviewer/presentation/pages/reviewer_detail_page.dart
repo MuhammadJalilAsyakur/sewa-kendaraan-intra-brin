@@ -1,28 +1,55 @@
+// reviewer_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:vehicle_rental/features/reviewer/domain/entities/reviewer_item.dart';
-import 'package:vehicle_rental/features/reviewer/presentation/providers/reviewer_provider.dart';
+import 'package:vehicle_rental/features/reviewer/presentation/widgets/reviewer_confirm_dialog.dart';
+import 'package:vehicle_rental/features/reviewer/presentation/widgets/reviewer_detail_section.dart';
 
 class ReviewerDetailPage extends StatelessWidget {
   final ReviewerItem item;
 
   const ReviewerDetailPage({super.key, required this.item});
 
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'Disetujui':
+        return const Color(0xFF2E7D32);
+      case 'Ditolak':
+        return const Color(0xFFC62828);
+      default:
+        return const Color(0xFFE65100);
+    }
+  }
+
+  Color _statusBgColor(String status) {
+    switch (status) {
+      case 'Disetujui':
+        return const Color(0xFFE8F5E9);
+      case 'Ditolak':
+        return const Color(0xFFFFEBEE);
+      default:
+        return const Color(0xFFFFF3E0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Detail Pengajuan',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -30,34 +57,88 @@ class ReviewerDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status
+            // Status banner
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: _statusColor(item.status),
-                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: Text(
-                item.status,
-                style: const TextStyle(color: Colors.white),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: _statusBgColor(item.status),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      item.status == 'Disetujui'
+                          ? Icons.check_circle_outline_rounded
+                          : item.status == 'Ditolak'
+                              ? Icons.cancel_outlined
+                              : Icons.hourglass_empty_rounded,
+                      color: _statusColor(item.status),
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _statusBgColor(item.status),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      item.status,
+                      style: TextStyle(
+                        color: _statusColor(item.status),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
 
-            _SectionTitle('Informasi Pengajuan'),
-            _DetailRow(
-              'Tanggal',
-              DateFormat('dd MMM yyyy').format(item.tanggalPengajuan),
+            // Informasi Pengajuan
+            ReviewerDetailSection(
+              title: 'Informasi Pengajuan',
+              icon: Icons.description_outlined,
+              rows: [
+                ReviewerDetailRow(
+                  label: 'Tanggal',
+                  value: DateFormat('dd MMM yyyy').format(item.tanggalPengajuan),
+                ),
+                ReviewerDetailRow(label: 'Judul', value: item.judul),
+                ReviewerDetailRow(label: 'Keperluan', value: item.keperluan),
+                ReviewerDetailRow(label: 'Periode', value: item.periode),
+              ],
             ),
-            _DetailRow('Judul', item.judul),
-            _DetailRow('Keperluan', item.keperluan),
-            _DetailRow('Periode', item.periode),
+            const SizedBox(height: 12),
 
-            const SizedBox(height : 16),
-            _SectionTitle('Data Pemohon'),
-            _DetailRow('Nama', item.namaPemohon),
-            _DetailRow('Satuan Kerja', item.satuanKerja),
-
+            // Data Pemohon
+            ReviewerDetailSection(
+              title: 'Data Pemohon',
+              icon: Icons.person_outline_rounded,
+              rows: [
+                ReviewerDetailRow(label: 'Nama', value: item.namaPemohon),
+                ReviewerDetailRow(
+                    label: 'Satuan Kerja', value: item.satuanKerja),
+              ],
+            ),
             const SizedBox(height: 24),
 
             // Action buttons
@@ -68,14 +149,17 @@ class ReviewerDetailPage extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: const Color(0xFF2E7D32),
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () => _confirmApprove(context),
-                        icon: const Icon(Icons.check, color: Colors.white),
+                        onPressed: () =>
+                            ReviewerConfirmDialog.showApprove(context, item.id),
+                        icon: const Icon(Icons.check_circle_outline_rounded,
+                            color: Colors.white, size: 18),
                         label: const Text(
                           'Terima',
                           style: TextStyle(color: Colors.white),
@@ -88,14 +172,17 @@ class ReviewerDetailPage extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: const Color(0xFFC62828),
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () => _confirmReject(context),
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () =>
+                            ReviewerConfirmDialog.showReject(context, item.id),
+                        icon: const Icon(Icons.cancel_outlined,
+                            color: Colors.white, size: 18),
                         label: const Text(
                           'Tolak',
                           style: TextStyle(color: Colors.white),
@@ -106,154 +193,6 @@ class ReviewerDetailPage extends StatelessWidget {
               ),
           ],
         ),
-      ),
-    );
-  }
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'Disetujui':
-        return Colors.green;
-      case 'Ditolak':
-        return Colors.red;
-      default:
-        return Colors.orange;
-    }
-  }
-
-  void _confirmApprove(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Konfirmasi Approve'),
-        content: const Text('Yakin ingin menyetujui pengajuan ini?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            onPressed: () async {
-              Navigator.pop(context);
-              final success = await context.read<ReviewerProvider>().approve(
-                item.id,
-              );
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success ? 'Pengajuan disetujui' : 'Gagal menyetujui',
-                    ),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-                if (success) Navigator.pop(context);
-              }
-            },
-            child: const Text('Terima', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmReject(BuildContext context) {
-    final alasanController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Konfirmasi Reject'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Masukkan alasan penolakan:'),
-            const SizedBox(height: 8),
-            TextField(
-              controller: alasanController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Alasan penolakan...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              if (alasanController.text.isEmpty) return;
-              Navigator.pop(context);
-              final success = await context.read<ReviewerProvider>().reject(
-                item.id,
-                alasanController.text,
-              );
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success ? 'Pengajuan ditolak' : 'Gagal menolak',
-                    ),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-                if (success) Navigator.pop(context);
-              }
-            },
-            child: const Text('Tolak', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _DetailRow(this.label, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(label, style: TextStyle(color: Colors.grey.shade600)),
-          ),
-          const Text(': '),
-          Expanded(child: Text(value)),
-        ],
       ),
     );
   }

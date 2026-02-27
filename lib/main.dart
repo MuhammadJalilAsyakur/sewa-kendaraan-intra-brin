@@ -18,7 +18,7 @@ import 'package:vehicle_rental/features/civitas/presentation/pages/welcome_page.
 import 'package:vehicle_rental/features/civitas/presentation/providers/sewa_kendaraan_provider.dart';
 import 'package:vehicle_rental/features/civitas/presentation/providers/tracking_provider.dart';
 
-void main() {
+void main()  {
   WidgetsFlutterBinding.ensureInitialized();
 
   final dio = Dio(

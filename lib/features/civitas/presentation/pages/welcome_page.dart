@@ -8,106 +8,157 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffe5e7eb), // abu muda mirip desain
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 48),
 
-            /// Judul
-            const Text(
-              "Selamat Datang",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 40),
-
-            /// Card Container
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  /// Reviewer
-                  _MenuCard(
-                    title: "Reviewer",
-                    iconPath: 'assets/icons/reviews.png',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ReviewerPage()),
-                    ),
-                  ),
-
-                  /// Civitas
-                  _MenuCard(
-                    title: "Civitas",
-                    iconPath: 'assets/icons/worker.png',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CivitasPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+              // Header
+              const Text(
+                'Selamat Datang 👋',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Pilih peran Anda untuk melanjutkan',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              // Cards
+              _RoleCard(
+                title: 'Civitas',
+                subtitle: 'Ajukan permohonan peminjaman kendaraan',
+                icon: Icons.person_outline_rounded,
+                color: const Color(0xFF1565C0),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CivitasPage()),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _RoleCard(
+                title: 'Penelaah',
+                subtitle: 'Telaah dan verifikasi dokumen permohonan',
+                icon: Icons.find_in_page_outlined,
+                color: const Color(0xFF6A1B9A),
+                onTap: () {
+                  // TODO: navigate ke penelaah page
+                },
+              ),
+              const SizedBox(height: 16),
+              _RoleCard(
+                title: 'Reviewer',
+                subtitle: 'Review dan setujui permohonan kendaraan',
+                icon: Icons.rate_review_outlined,
+                color: const Color(0xFFC62828),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ReviewerPage()),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// COMPONENT CARD
-class _MenuCard extends StatelessWidget {
+class _RoleCard extends StatelessWidget {
   final String title;
-  final String iconPath;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
-  const _MenuCard({
+  const _RoleCard({
     required this.title,
-    required this.iconPath,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: 160,
-        height: 180,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 8,
-              offset: Offset(0, 3),
-              color: Colors.black12,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              iconPath,
-              width: 100,
-              height: 100,
-              fit: BoxFit.contain,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-          ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Icon container
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(width: 16),
+
+              // Text
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: Colors.grey.shade400,
+              ),
+            ],
+          ),
         ),
       ),
     );

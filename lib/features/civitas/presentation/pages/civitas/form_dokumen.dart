@@ -1,243 +1,162 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:vehicle_rental/features/civitas/presentation/pages/civitas/tracking_civitas_page.dart';
 import 'package:vehicle_rental/features/civitas/presentation/providers/sewa_kendaraan_provider.dart';
 import 'package:vehicle_rental/features/civitas/presentation/providers/tracking_provider.dart';
+import '../../widgets/dokumen_upload_field.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/summary_card.dart';
 
 class FormDokumen extends StatelessWidget {
   const FormDokumen({super.key});
+
+  String _formatDate(DateTime? date, {bool withTime = false}) {
+    if (date == null) return '-';
+    return withTime
+        ? DateFormat('dd MMM yyyy, HH:mm').format(date)
+        : DateFormat('dd MMM yyyy').format(date);
+  }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SewaKendaraanProvider>();
     final dokumen = provider.dokumenPersyaratan;
     final kegiatan = provider.kegiatanDanTujuan;
-    final waktuPeminjaman = provider.waktuPeminjaman;
+    final waktu = provider.waktuPeminjaman;
     final penumpang = provider.dataPenumpangDanPengemudi;
     final dataPemohon = provider.dataPemohon;
     final adminInfo = provider.administrasiInfo;
-    final penananggungJawab = provider.dataPenanggungJawab;
+    final pj = provider.dataPenanggungJawab;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildCard(
+          // Dokumen Persyaratan
+          SectionCard(
             title: 'Dokumen Persyaratan',
-            subtitle: 'Silahkan upload file Syarat Peminjaman dalam bentuk PDF',
-            children: [
-              const Text(
-                'Surat Tugas *',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        dokumen.suratTugas ?? 'choose file',
-                        style: TextStyle(
-                          color: dokumen.suratTugas != null
-                              ? Colors.black
-                              : Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      provider.pickSuratTugas(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFD32F2F),
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Browse',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            icon: Icons.upload_file_outlined,
+            iconColor: const Color(0xFFD32F2F),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Upload file persyaratan dalam format PDF',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+                const SizedBox(height: 12),
+                DokumenUploadField(
+                  label: 'Surat Tugas *',
+                  fileName: dokumen.suratTugas,
+                  onBrowse: () => provider.pickSuratTugas(context),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
-          _buildSummaryCard(
+
+          // Ringkasan Permohonan
+          SummaryCard(
             title: 'Ringkasan Permohonan',
+            icon: Icons.directions_car_outlined,
+            iconColor: const Color(0xFF2E7D32),
             items: [
-              _SummaryItem('Nama Kegiatan', kegiatan.namaKegiatan),
-              _SummaryItem('Kawasan', adminInfo.kawasan),
-              _SummaryItem('Tujuan perjalanan', kegiatan.tujuanPerjalanan),
-              _SummaryItem('Keperluan', kegiatan.keperluan),
-              _SummaryItem(
-                'Tanggal mulai pinjam',
-                waktuPeminjaman.tanggalMulaiPinjam != null
-                    ? DateFormat(
-                        'd - M - yyyy HH:mm',
-                      ).format(waktuPeminjaman.tanggalMulaiPinjam!)
-                    : '-',
+              SummaryItem('Nama Kegiatan', kegiatan.namaKegiatan),
+              SummaryItem('Kawasan', adminInfo.kawasan),
+              SummaryItem('Tujuan Perjalanan', kegiatan.tujuanPerjalanan),
+              SummaryItem('Keperluan', kegiatan.keperluan),
+              SummaryItem(
+                'Mulai Pinjam',
+                _formatDate(waktu.tanggalMulaiPinjam, withTime: true),
               ),
-              _SummaryItem(
-                'Tanggal selesai pinjam',
-                waktuPeminjaman.tanggalSelesaiPinjam != null
-                    ? DateFormat(
-                        'd - M - yyyy HH:mm',
-                      ).format(waktuPeminjaman.tanggalSelesaiPinjam!)
-                    : '-',
+              SummaryItem(
+                'Selesai Pinjam',
+                _formatDate(waktu.tanggalSelesaiPinjam, withTime: true),
               ),
-              _SummaryItem(
-                'Jumlah penumpang',
+              SummaryItem(
+                'Jumlah Penumpang',
                 penumpang.jumlahPenumpang?.toString(),
               ),
-              _SummaryItem('Status Pengemudi', penumpang.statusPengemudi),
+              SummaryItem('Status Pengemudi', penumpang.statusPengemudi),
             ],
           ),
           const SizedBox(height: 16),
-          _buildSummaryCard(
-            title: 'Ringkasan Indentitas Pemohon',
+
+          // Ringkasan Identitas Pemohon
+          SummaryCard(
+            title: 'Identitas Pemohon',
+            icon: Icons.person_outline_rounded,
+            iconColor: const Color(0xFF1565C0),
             items: [
-              _SummaryItem('Nama Pemohon', dataPemohon?.nama),
-              _SummaryItem('NIP Pemohon', dataPemohon?.nip),
-              _SummaryItem('Nomor Ponsel Pemohon', dataPemohon?.nomorHp),
-              _SummaryItem('Satuan kerja pemohon', dataPemohon?.satuanKerja),
-              _SummaryItem(
-                'Tanggal Permohonan',
-                adminInfo.tanggalPermohonan != null
-                    ? DateFormat(
-                        'd - M - yyyy HH:mm',
-                      ).format(adminInfo.tanggalPermohonan!)
-                    : '-',
+              SummaryItem('Nama', dataPemohon?.nama),
+              SummaryItem('NIP', dataPemohon?.nip),
+              SummaryItem('Nomor Ponsel', dataPemohon?.nomorHp),
+              SummaryItem('Satuan Kerja', dataPemohon?.satuanKerja),
+              SummaryItem(
+                'Tgl Permohonan',
+                _formatDate(adminInfo.tanggalPermohonan, withTime: true),
               ),
-              _SummaryItem(
-                'No. Surat Pengantar',
-                adminInfo.nomorSuratPengantar,
+              SummaryItem('No. Surat Pengantar', adminInfo.nomorSuratPengantar),
+              SummaryItem(
+                'Tgl Surat Pengantar',
+                _formatDate(adminInfo.tanggalSuratPengantar),
               ),
-              _SummaryItem(
-                'Tanggal Surat Pengantar',
-                adminInfo.tanggalSuratPengantar != null
-                    ? DateFormat(
-                        'd - M - yyyy',
-                      ).format(adminInfo.tanggalSuratPengantar!)
-                    : '-',
-              ),
-              _SummaryItem(
-                'Keterangan Permohonan',
-                adminInfo.keteranganPemohon,
-              ),
+              SummaryItem('Keterangan', adminInfo.keteranganPemohon),
             ],
           ),
           const SizedBox(height: 16),
-          _buildSummaryCard(
-            title: 'Ringkasan Indentitas Penanggung jawab',
+
+          // Ringkasan Penanggung Jawab
+          SummaryCard(
+            title: 'Identitas Penanggung Jawab',
+            icon: Icons.badge_outlined,
+            iconColor: const Color(0xFF6A1B9A),
             items: [
-              _SummaryItem(
-                'Nama Penanggung jawab',
-                penananggungJawab.namaPenanggungJawab,
-              ),
-              _SummaryItem(
-                'Nomor Ponsel Penanggung jawab',
-                penananggungJawab.nomorHpPenanggungJawab,
-              ),
-              _SummaryItem('Email penanggung jawab', penananggungJawab.email),
+              SummaryItem('Nama', pj.namaPenanggungJawab),
+              SummaryItem('Nomor Ponsel', pj.nomorHpPenanggungJawab),
+              SummaryItem('Email', pj.email),
             ],
           ),
           const SizedBox(height: 24),
+
+          // Button Kirim
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD32F2F),
-                foregroundColor: Colors.white,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               onPressed: provider.isLoading
                   ? null
-                  : () async {
-                      final trackingData = await provider.submit();
-
-                      if (trackingData != null && context.mounted) {
-                        final trackingProvider = context
-                            .read<TrackingProvider>();
-
-                        if (trackingData['isEdit'] == true) {
-                          trackingProvider.updateTrackingItem(
-                            trackingData['id'],
-                            trackingData['detailData'],
-                          );
-                        } else {
-                          await trackingProvider.createTrackingFromData(
-                            id: trackingData['id'],
-                            status: trackingData['status'],
-                            tanggalPengajuan: trackingData['tanggalPengajuan'],
-                            judul: trackingData['judul'],
-                            keperluan: trackingData['keperluan'],
-                            periode: trackingData['periode'],
-                            detailData: trackingData['detailData'],
-                          );
-                        }
-
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('berhasil'),
-                            content: const Text(
-                              'Permohonan sewa berhasil dikirim.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  context
-                                      .read<SewaKendaraanProvider>()
-                                      .resetForm();
-
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const TrackingPage(),
-                                    ),
-                                  );
-                                },
-                                child: const Text('Lihat tracking'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    },
+                  : () => _handleSubmit(context, provider),
               child: provider.isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Text('Kirim'),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send_rounded, color: Colors.white, size: 18),
                         SizedBox(width: 8),
-                        Icon(Icons.check, size: 20),
+                        Text(
+                          'Kirim Permohonan',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
             ),
@@ -247,104 +166,104 @@ class FormDokumen extends StatelessWidget {
     );
   }
 
-  Widget _buildCard({
-    required String title,
-    String? subtitle,
-    required List<Widget> children,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Future<void> _handleSubmit(
+    BuildContext context,
+    SewaKendaraanProvider provider,
+  ) async {
+    final trackingData = await provider.submit();
+    if (trackingData == null || !context.mounted) return;
+
+    final trackingProvider = context.read<TrackingProvider>();
+
+    if (trackingData['isEdit'] == true) {
+      trackingProvider.updateTrackingItem(
+        trackingData['id'],
+        trackingData['detailData'],
+      );
+    } else {
+      await trackingProvider.createTrackingFromData(
+        id: trackingData['id'],
+        status: trackingData['status'],
+        tanggalPengajuan: trackingData['tanggalPengajuan'],
+        judul: trackingData['judul'],
+        keperluan: trackingData['keperluan'],
+        periode: trackingData['periode'],
+        detailData: trackingData['detailData'],
+      );
+    }
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 36,
                 ),
               ),
-              const Icon(Icons.expand_less),
+              const SizedBox(height: 16),
+              const Text(
+                'Berhasil!',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Permohonan sewa kendaraan berhasil dikirim.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD32F2F),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    context.read<SewaKendaraanProvider>().resetForm();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TrackingPage()),
+                    );
+                  },
+                  child: const Text(
+                    'Lihat Tracking',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
             ],
           ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-            ),
-          ],
-          const SizedBox(height: 16),
-          ...children,
-        ],
+        ),
       ),
     );
   }
-
-  Widget _buildSummaryCard({
-    required String title,
-    required List<_SummaryItem> items,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 140,
-                    child: Text(
-                      item.label,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  const Text(' : ', style: TextStyle(fontSize: 12)),
-                  Expanded(
-                    child: Text(
-                      item.value ?? '-',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SummaryItem {
-  final String label;
-  final String? value;
-  _SummaryItem(this.label, this.value);
 }

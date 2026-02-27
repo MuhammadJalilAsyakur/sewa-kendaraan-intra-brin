@@ -141,7 +141,6 @@ class SewaKendaraanProvider extends ChangeNotifier {
       } else {
         await repository.submitSewaKendaraan(requestData);
       }
-      await repository.submitSewaKendaraan(requestData);
 
       final id = _isEditMode
           ? _editingId!
@@ -174,7 +173,6 @@ class SewaKendaraanProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   void loadForEdit(SewaKendaraan data, String id) {
     _isEditMode = true;

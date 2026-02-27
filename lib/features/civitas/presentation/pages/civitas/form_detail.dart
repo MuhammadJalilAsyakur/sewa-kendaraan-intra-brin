@@ -4,6 +4,7 @@ import 'package:vehicle_rental/features/civitas/presentation/providers/sewa_kend
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_date_time_picker.dart';
 import '../../widgets/custom_dropdown.dart';
+import '../../widgets/section_card.dart'; // import SectionCard
 
 class FormDetail extends StatefulWidget {
   const FormDetail({super.key});
@@ -18,20 +19,15 @@ class _FormDetail extends State<FormDetail> {
   late TextEditingController namaPJController;
   late TextEditingController hpPJController;
   late TextEditingController emailPJController;
-
   late TextEditingController namaKegiatanController;
   late TextEditingController keperluanController;
   late TextEditingController tujuanController;
-
   late TextEditingController jumlahPenumpangController;
 
   @override
   void initState() {
     super.initState();
-
     final p = context.read<SewaKendaraanProvider>();
-
-    // ===== Penanggung Jawab =====
     namaPJController = TextEditingController(
       text: p.dataPenanggungJawab.namaPenanggungJawab,
     );
@@ -41,8 +37,6 @@ class _FormDetail extends State<FormDetail> {
     emailPJController = TextEditingController(
       text: p.dataPenanggungJawab.email,
     );
-
-    // ===== Kegiatan =====
     namaKegiatanController = TextEditingController(
       text: p.kegiatanDanTujuan.namaKegiatan,
     );
@@ -52,10 +46,8 @@ class _FormDetail extends State<FormDetail> {
     tujuanController = TextEditingController(
       text: p.kegiatanDanTujuan.tujuanPerjalanan,
     );
-
-    // ===== Penumpang =====
     jumlahPenumpangController = TextEditingController(
-      text: p.dataPenumpangDanPengemudi.jumlahPenumpang?.toString() ?? "",
+      text: p.dataPenumpangDanPengemudi.jumlahPenumpang?.toString() ?? '',
     );
   }
 
@@ -74,10 +66,7 @@ class _FormDetail extends State<FormDetail> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SewaKendaraanProvider>();
-    // final penananggungJawab = provider.dataPenanggungJawab;
-    // final kegiatan = provider.kegiatanDanTujuan;
     final waktuPeminjaman = provider.waktuPeminjaman;
-    // final penumpang = provider.dataPenumpangDanPengemudi;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -85,21 +74,20 @@ class _FormDetail extends State<FormDetail> {
         key: _formKey,
         child: Column(
           children: [
-            _buildCard(
-              title: 'Data Penanggung jawab',
-              icon: Icons.person,
+            // Data Penanggung Jawab
+            SectionCard(
+              title: 'Data Penanggung Jawab',
+              icon: Icons.person_outline_rounded,
+              iconColor: const Color(0xFF1565C0),
               child: Column(
                 children: [
                   CustomTextField(
                     label: 'Nama Penanggung Jawab*',
-                    hint: 'Masukan nama penanggung Jawab',
+                    hint: 'Masukan nama penanggung jawab',
                     controller: namaPJController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'nama penanggung Jawab wajib diisi ya';
-                      }
-                      return null;
-                    },
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Nama penanggung jawab wajib diisi'
+                        : null,
                     onChanged: (val) {
                       final current = context
                           .read<SewaKendaraanProvider>()
@@ -111,16 +99,13 @@ class _FormDetail extends State<FormDetail> {
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
-                    label: 'Nomor ponsel Penanggung Jawab*',
-                    hint: 'Masukan nomor ponsel penanggung Jawab',
+                    label: 'Nomor Ponsel Penanggung Jawab*',
+                    hint: 'Masukan nomor ponsel',
                     controller: hpPJController,
                     keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Nomor ponsel Penanggung Jawab wajib diisi ya';
-                      }
-                      return null;
-                    },
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Nomor ponsel wajib diisi'
+                        : null,
                     onChanged: (val) {
                       final current = context
                           .read<SewaKendaraanProvider>()
@@ -133,15 +118,11 @@ class _FormDetail extends State<FormDetail> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     label: 'Email Penanggung Jawab*',
-                    hint: 'Masukan email penanggung Jawab',
+                    hint: 'Masukan email',
                     controller: emailPJController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Email Penanggung Jawab wajib diisi ya';
-                      }
-                      return null;
-                    },
                     keyboardType: TextInputType.emailAddress,
+                    validator: (val) =>
+                        val == null || val.isEmpty ? 'Email wajib diisi' : null,
                     onChanged: (val) {
                       final current = context
                           .read<SewaKendaraanProvider>()
@@ -155,47 +136,44 @@ class _FormDetail extends State<FormDetail> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildCard(
-              title: 'Kegiatan dan tujuan',
-              icon: Icons.directions_car,
+
+            // Kegiatan dan Tujuan
+            SectionCard(
+              title: 'Kegiatan dan Tujuan',
+              icon: Icons.directions_car_outlined,
+              iconColor: const Color(0xFF2E7D32),
               child: Column(
                 children: [
                   CustomTextField(
                     label: 'Nama Kegiatan*',
                     hint: 'Masukan nama kegiatan',
                     controller: namaKegiatanController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Nama Kegiatan wajib diisi ya';
-                      }
-                      return null;
-                    },
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Nama kegiatan wajib diisi'
+                        : null,
                     onChanged: (val) {
-                      final currentKegiatan = context
+                      final current = context
                           .read<SewaKendaraanProvider>()
                           .kegiatanDanTujuan;
                       provider.updateKegiatanDanTujuan(
-                        currentKegiatan.copyWith(namaKegiatan: val),
+                        current.copyWith(namaKegiatan: val),
                       );
                     },
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
-                    label: 'Keperluan (Dinas/Operasional/Antar jemput) *',
-                    hint: 'Masukan keperluan',
+                    label: 'Keperluan*',
+                    hint: 'Dinas / Operasional / Antar jemput',
                     controller: keperluanController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Keperluan wajib diisi ya';
-                      }
-                      return null;
-                    },
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Keperluan wajib diisi'
+                        : null,
                     onChanged: (val) {
-                      final currentKegiatan = context
+                      final current = context
                           .read<SewaKendaraanProvider>()
                           .kegiatanDanTujuan;
                       provider.updateKegiatanDanTujuan(
-                        currentKegiatan.copyWith(keperluan: val),
+                        current.copyWith(keperluan: val),
                       );
                     },
                   ),
@@ -204,18 +182,15 @@ class _FormDetail extends State<FormDetail> {
                     label: 'Tujuan Perjalanan*',
                     hint: 'Masukan tujuan perjalanan',
                     controller: tujuanController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Tujuan Perjalanan wajib diisi ya';
-                      }
-                      return null;
-                    },
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Tujuan perjalanan wajib diisi'
+                        : null,
                     onChanged: (val) {
-                      final currentKegiatan = context
+                      final current = context
                           .read<SewaKendaraanProvider>()
                           .kegiatanDanTujuan;
                       provider.updateKegiatanDanTujuan(
-                        currentKegiatan.copyWith(tujuanPerjalanan: val),
+                        current.copyWith(tujuanPerjalanan: val),
                       );
                     },
                   ),
@@ -223,23 +198,21 @@ class _FormDetail extends State<FormDetail> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildCard(
-              title: 'Waktu peminjaman',
-              icon: Icons.access_time,
+
+            // Waktu Peminjaman
+            SectionCard(
+              title: 'Waktu Peminjaman',
+              icon: Icons.access_time_rounded,
+              iconColor: const Color(0xFF6A1B9A),
               child: Column(
                 children: [
                   CustomDateTimePicker(
-                    label: 'Tanggal mulai pinjam*',
+                    label: 'Tanggal Mulai Pinjam*',
                     hint: 'mm/dd/yy --:-- --',
                     withTime: true,
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Tanggal mulai pinjam wajib diisi';
-                      }
-
-                      return null;
-                    },
                     value: waktuPeminjaman.tanggalMulaiPinjam,
+                    validator: (val) =>
+                        val == null ? 'Tanggal mulai pinjam wajib diisi' : null,
                     onChanged: (val) {
                       provider.updateWaktuPeminjaman(
                         waktuPeminjaman.copyWith(tanggalMulaiPinjam: val),
@@ -248,28 +221,17 @@ class _FormDetail extends State<FormDetail> {
                   ),
                   const SizedBox(height: 16),
                   CustomDateTimePicker(
-                    label: 'Tanggal selesai pinjam*',
+                    label: 'Tanggal Selesai Pinjam*',
                     hint: 'mm/dd/yy --:-- --',
                     withTime: true,
                     value: waktuPeminjaman.tanggalSelesaiPinjam,
                     minDate: waktuPeminjaman.tanggalMulaiPinjam,
-                    validator: (value) {
-                      if (value == null) {
+                    validator: (val) {
+                      if (val == null)
                         return 'Tanggal selesai pinjam wajib diisi';
-                      }
-
                       final mulai = waktuPeminjaman.tanggalMulaiPinjam;
-
-                      if (mulai != null && value.isBefore(mulai)) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Tanggal selesai pinjam tidak boleh sebelum tanggal mulai',
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return 'Tanggal selesai pinjam tidak boleh sebelum tanggal mulai';
+                      if (mulai != null && val.isBefore(mulai)) {
+                        return 'Tidak boleh sebelum tanggal mulai';
                       }
                       return null;
                     },
@@ -283,9 +245,12 @@ class _FormDetail extends State<FormDetail> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildCard(
+
+            // Penumpang & Pengemudi
+            SectionCard(
               title: 'Penumpang & Pengemudi',
-              icon: Icons.group,
+              icon: Icons.group_outlined,
+              iconColor: const Color(0xFFE65100),
               child: Column(
                 children: [
                   CustomTextField(
@@ -293,12 +258,9 @@ class _FormDetail extends State<FormDetail> {
                     hint: 'Masukan jumlah penumpang',
                     controller: jumlahPenumpangController,
                     keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Jumlah Penumpang wajib diisi ya';
-                      }
-                      return null;
-                    },
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Jumlah penumpang wajib diisi'
+                        : null,
                     onChanged: (val) {
                       final current = context
                           .read<SewaKendaraanProvider>()
@@ -311,14 +273,9 @@ class _FormDetail extends State<FormDetail> {
                   const SizedBox(height: 16),
                   CustomDropdown<String>(
                     label: 'Status Pengemudi*',
-                    value: context
-                        .read<SewaKendaraanProvider>()
-                        .dataPenumpangDanPengemudi
-                        .statusPengemudi,
-                    validator: (value) {
-                      if (value == null) return 'Status Pengemudi wajib diisi';
-                      return null;
-                    },
+                    value: provider.dataPenumpangDanPengemudi.statusPengemudi,
+                    validator: (val) =>
+                        val == null ? 'Status pengemudi wajib diisi' : null,
                     items: const [
                       DropdownMenuItem(
                         value: 'Dengan pengemudi',
@@ -342,15 +299,17 @@ class _FormDetail extends State<FormDetail> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Button Selanjutnya
             SizedBox(
               width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
+              height: 50,
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD32F2F),
-                  foregroundColor: Colors.white,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 onPressed: () {
@@ -358,62 +317,48 @@ class _FormDetail extends State<FormDetail> {
                     provider.nextStep();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Mohon lengkapi data yang wajib diisi'),
-                        backgroundColor: Colors.red,
+                      SnackBar(
+                        content: const Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            SizedBox(width: 8),
+                            Text('Mohon lengkapi data yang wajib diisi'),
+                          ],
+                        ),
+                        backgroundColor: const Color(0xFFD32F2F),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        margin: const EdgeInsets.all(16),
                       ),
                     );
                   }
                 },
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Selanjutnya'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCard({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Theme(
-        data: ThemeData().copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          initiallyExpanded: true,
-          title: Row(
-            children: [
-              Icon(icon, color: Colors.grey.shade700),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Selanjutnya',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: child,
             ),
           ],
         ),
