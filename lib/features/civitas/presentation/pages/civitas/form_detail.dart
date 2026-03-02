@@ -23,36 +23,43 @@ class _FormDetail extends State<FormDetail> {
   late TextEditingController keperluanController;
   late TextEditingController tujuanController;
   late TextEditingController jumlahPenumpangController;
+  late SewaKendaraanProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    final p = context.read<SewaKendaraanProvider>();
+    _provider = context.read<SewaKendaraanProvider>();
+
     namaPJController = TextEditingController(
-      text: p.dataPenanggungJawab.namaPenanggungJawab,
+      text: _provider.dataPenanggungJawab.namaPenanggungJawab,
     );
     hpPJController = TextEditingController(
-      text: p.dataPenanggungJawab.nomorHpPenanggungJawab,
+      text: _provider.dataPenanggungJawab.nomorHpPenanggungJawab,
     );
     emailPJController = TextEditingController(
-      text: p.dataPenanggungJawab.email,
+      text: _provider.dataPenanggungJawab.email,
     );
     namaKegiatanController = TextEditingController(
-      text: p.kegiatanDanTujuan.namaKegiatan,
+      text: _provider.kegiatanDanTujuan.namaKegiatan,
     );
     keperluanController = TextEditingController(
-      text: p.kegiatanDanTujuan.keperluan,
+      text: _provider.kegiatanDanTujuan.keperluan,
     );
     tujuanController = TextEditingController(
-      text: p.kegiatanDanTujuan.tujuanPerjalanan,
+      text: _provider.kegiatanDanTujuan.tujuanPerjalanan,
     );
     jumlahPenumpangController = TextEditingController(
-      text: p.dataPenumpangDanPengemudi.jumlahPenumpang?.toString() ?? '',
+      text:
+          _provider.dataPenumpangDanPengemudi.jumlahPenumpang?.toString() ?? '',
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _provider.addListener(_syncControllers);
+    });
   }
 
   @override
   void dispose() {
+    _provider.removeListener(_syncControllers);
     namaPJController.dispose();
     hpPJController.dispose();
     emailPJController.dispose();
@@ -61,6 +68,44 @@ class _FormDetail extends State<FormDetail> {
     tujuanController.dispose();
     jumlahPenumpangController.dispose();
     super.dispose();
+  }
+
+  void _syncControllers() {
+    _provider = context.read<SewaKendaraanProvider>();
+
+    if (namaPJController.text !=
+        (_provider.dataPenanggungJawab.namaPenanggungJawab ?? '')) {
+      namaPJController.text =
+          _provider.dataPenanggungJawab.namaPenanggungJawab ?? '';
+    }
+    if (hpPJController.text !=
+        (_provider.dataPenanggungJawab.nomorHpPenanggungJawab ?? '')) {
+      hpPJController.text =
+          _provider.dataPenanggungJawab.nomorHpPenanggungJawab ?? '';
+    }
+    if (emailPJController.text != (_provider.dataPenanggungJawab.email ?? '')) {
+      emailPJController.text = _provider.dataPenanggungJawab.email ?? '';
+    }
+    if (namaKegiatanController.text !=
+        (_provider.kegiatanDanTujuan.namaKegiatan ?? '')) {
+      namaKegiatanController.text =
+          _provider.kegiatanDanTujuan.namaKegiatan ?? '';
+    }
+    if (keperluanController.text !=
+        (_provider.kegiatanDanTujuan.keperluan ?? '')) {
+      keperluanController.text = _provider.kegiatanDanTujuan.keperluan ?? '';
+    }
+    if (tujuanController.text !=
+        (_provider.kegiatanDanTujuan.tujuanPerjalanan ?? '')) {
+      tujuanController.text =
+          _provider.kegiatanDanTujuan.tujuanPerjalanan ?? '';
+    }
+    if (jumlahPenumpangController.text !=
+        (_provider.dataPenumpangDanPengemudi.jumlahPenumpang?.toString() ??
+            '')) {
+      jumlahPenumpangController.text =
+          _provider.dataPenumpangDanPengemudi.jumlahPenumpang?.toString() ?? '';
+    }
   }
 
   @override

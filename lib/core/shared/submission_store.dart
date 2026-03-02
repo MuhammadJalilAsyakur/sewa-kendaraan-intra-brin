@@ -42,4 +42,16 @@ class SubmissionStore {
       '✅ SubmissionStore: added ${_submissions.length} items',
     ); // tambah ini
   }
+
+  void removeSubmission(String id) {
+    _submissions.removeWhere((item) => item.id == id);
+    print(
+      '✅ SubmissionStore: removed id $id, remaining ${_submissions.length} items',
+    );
+  }
+
+  void clearAll() {
+    _submissions.clear();
+    print('✅ SubmissionStore: cleared all');
+  }
 }

@@ -85,7 +85,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.white,
-        ).copyWith(surfaceTint: Colors.transparent),
+        ).copyWith(surfaceTint: Colors.transparent),  
         scaffoldBackgroundColor: Colors.white,
       ),
       home: const WelcomePage(),

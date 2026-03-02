@@ -17,6 +17,7 @@ class FormIndentitas extends StatefulWidget {
 
 class _FormIndentitas extends State<FormIndentitas> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late SewaKendaraanProvider _provider;
 
   late TextEditingController nomorSuratController;
   late TextEditingController keteranganPemohonController;
@@ -24,17 +25,35 @@ class _FormIndentitas extends State<FormIndentitas> {
   @override
   void initState() {
     super.initState();
-    final p = context.read<SewaKendaraanProvider>();
+    _provider = context.read<SewaKendaraanProvider>(); // ← simpan reference
     nomorSuratController = TextEditingController(
-      text: p.administrasiInfo.nomorSuratPengantar ?? '',
+      text: _provider.administrasiInfo.nomorSuratPengantar ?? '',
     );
     keteranganPemohonController = TextEditingController(
-      text: p.administrasiInfo.keteranganPemohon ?? '',
+      text: _provider.administrasiInfo.keteranganPemohon ?? '',
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SewaKendaraanProvider>().addListener(_syncControllers);
+    });
+  }
+
+  void _syncControllers() {
+    _provider = context.read<SewaKendaraanProvider>(); // ← simpan reference
+    if (nomorSuratController.text !=
+        (_provider.administrasiInfo.nomorSuratPengantar ?? "")) {
+      nomorSuratController.text =
+          _provider.administrasiInfo.nomorSuratPengantar ?? '';
+    }
+    if (keteranganPemohonController.text !=
+        (_provider.administrasiInfo.keteranganPemohon ?? '')) {
+      keteranganPemohonController.text =
+          _provider.administrasiInfo.keteranganPemohon ?? '';
+    }
   }
 
   @override
   void dispose() {
+    _provider.removeListener(_syncControllers); 
     nomorSuratController.dispose();
     keteranganPemohonController.dispose();
     super.dispose();

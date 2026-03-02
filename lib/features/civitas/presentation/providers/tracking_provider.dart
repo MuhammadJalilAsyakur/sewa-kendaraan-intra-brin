@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vehicle_rental/core/shared/submission_store.dart';
 import 'package:vehicle_rental/features/civitas/domain/entities/sewa_kendaraan.dart';
 import 'package:vehicle_rental/features/civitas/domain/entities/tracking_item.dart';
 import 'package:vehicle_rental/features/civitas/domain/repositories/tracking_repository.dart';
@@ -136,11 +137,21 @@ class TrackingProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _selectedItem = await repository.getTrackingDetail(id);
-      print("✅ Loaded detail for ID: $id");
+      // cari dari list lokal dulu
+      final localItem = _trackingItems.firstWhere(
+        (e) => e.id == id,
+        orElse: () => throw Exception('Tracking item not found'),
+      );
+      _selectedItem = localItem;
+      print("✅ Loaded detail from local for ID: $id");
     } catch (e) {
-      _error = e.toString();
-      print('❌ Error loading detail: $e');
+      // kalau tidak ada di lokal, baru hit repository
+      try {
+        _selectedItem = await repository.getTrackingDetail(id);
+      } catch (e) {
+        _error = e.toString();
+        print('❌ Error loading detail: $e');
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -156,6 +167,8 @@ class TrackingProvider extends ChangeNotifier {
       if (_selectedItem?.id == id) {
         _selectedItem = null;
       }
+
+      SubmissionStore().removeSubmission(id);
 
       notifyListeners();
       print("✅ Cancelled submission ID: $id");
