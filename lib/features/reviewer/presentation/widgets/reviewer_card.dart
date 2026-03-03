@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:vehicle_rental/features/reviewer/domain/entities/reviewer_item.dart';
 import 'package:vehicle_rental/features/reviewer/presentation/pages/reviewer_detail_page.dart';
 import 'package:vehicle_rental/features/reviewer/presentation/providers/reviewer_provider.dart';
-import 'package:vehicle_rental/features/reviewer/presentation/widgets/reviewer_confirm_dialog.dart';
 import 'reviewer_action_button.dart';
 import 'reviewer_info_row.dart';
 
