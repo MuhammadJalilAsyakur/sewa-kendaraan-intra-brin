@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:vehicle_rental/features/civitas/domain/entities/tracking_item.dart';
 import 'package:vehicle_rental/features/civitas/presentation/providers/tracking_provider.dart';
@@ -15,11 +15,13 @@ class TrackingDetailPage extends StatefulWidget {
 }
 
 class _TrackingDetailPageState extends State<TrackingDetailPage> {
+  final TrackingController _controller = Get.find<TrackingController>();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TrackingProvider>().loadTrackingDetail(widget.trackingId);
+      _controller.loadTrackingDetail(widget.trackingId);
     });
   }
 
@@ -43,76 +45,74 @@ class _TrackingDetailPageState extends State<TrackingDetailPage> {
           ),
         ),
       ),
-      body: Consumer<TrackingProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Obx(() {
+        if (_controller.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (provider.error != null) {
-            return _ErrorView(
-              message: provider.error!,
-              onRetry: () => provider.loadTrackingDetail(widget.trackingId),
-            );
-          }
+        if (_controller.error != null) {
+          return _ErrorView(
+            message: _controller.error!,
+            onRetry: () => _controller.loadTrackingDetail(widget.trackingId),
+          );
+        }
 
-          final item = provider.selectedItem;
-          if (item == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.inbox_outlined,
-                    size: 56,
-                    color: Colors.grey.shade300,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Data tidak ditemukan',
-                    style: TextStyle(color: Colors.grey.shade500),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+        final item = _controller.selectedItem;
+        if (item == null) {
+          return Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Status banner
-                _StatusBanner(status: item.status),
-                const SizedBox(height: 16),
-
-                // Info pengajuan
-                SummaryCard(
-                  title: 'Informasi Pengajuan',
-                  icon: Icons.description_outlined,
-                  iconColor: const Color(0xFF1565C0),
-                  items: [
-                    SummaryItem('ID Pengajuan', item.id),
-                    SummaryItem('Judul', item.judul),
-                    SummaryItem('Keperluan', item.keperluan),
-                    SummaryItem('Periode', item.periode),
-                    SummaryItem(
-                      'Tanggal Pengajuan',
-                      DateFormat(
-                        'dd MMM yyyy, HH:mm',
-                      ).format(item.tanggalPengajuan),
-                    ),
-                  ],
+                Icon(
+                  Icons.inbox_outlined,
+                  size: 56,
+                  color: Colors.grey.shade300,
                 ),
-                const SizedBox(height: 24),
-
-                // Action buttons
-                if (item.canEdit || item.canCancel || item.canViewPdf)
-                  _ActionButtons(item: item),
+                const SizedBox(height: 12),
+                Text(
+                  'Data tidak ditemukan',
+                  style: TextStyle(color: Colors.grey.shade500),
+                ),
               ],
             ),
           );
-        },
-      ),
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Status banner
+              _StatusBanner(status: item.status),
+              const SizedBox(height: 16),
+
+              // Info pengajuan
+              SummaryCard(
+                title: 'Informasi Pengajuan',
+                icon: Icons.description_outlined,
+                iconColor: const Color(0xFF1565C0),
+                items: [
+                  SummaryItem('ID Pengajuan', item.id),
+                  SummaryItem('Judul', item.judul),
+                  SummaryItem('Keperluan', item.keperluan),
+                  SummaryItem('Periode', item.periode),
+                  SummaryItem(
+                    'Tanggal Pengajuan',
+                    DateFormat(
+                      'dd MMM yyyy, HH:mm',
+                    ).format(item.tanggalPengajuan),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Action buttons
+              if (item.canEdit || item.canCancel || item.canViewPdf)
+                _ActionButtons(item: item),
+            ],
+          ),
+        );
+      }),
     );
   }
 }
@@ -279,7 +279,7 @@ class _ActionButtons extends StatelessWidget {
                 ),
               ),
               onPressed: () async {
-                final path = await context.read<TrackingProvider>().downloadPdf(
+                final path = await Get.find<TrackingController>().downloadPdf(
                   item.id,
                 );
                 if (context.mounted) {
@@ -392,8 +392,7 @@ class _ActionButtons extends StatelessWidget {
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
-                        final success = await context
-                            .read<TrackingProvider>()
+                        final success = await Get.find<TrackingController>()
                             .cancelSubmission(item.id);
                         if (context.mounted) {
                           if (success) Navigator.pop(context);

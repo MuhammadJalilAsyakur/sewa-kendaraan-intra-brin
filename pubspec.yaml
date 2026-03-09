@@ -31,10 +31,9 @@ dependencies:
   equatable: ^2.0.8
   flutter:
     sdk: flutter
-  provider: ^6.0.0
+  get: ^4.6.6
   intl: ^0.18.0
   rxdart: ^0.28.0
-  get_it: ^9.2.0
   dio: ^5.9.1
   file_picker: ^10.3.8
 

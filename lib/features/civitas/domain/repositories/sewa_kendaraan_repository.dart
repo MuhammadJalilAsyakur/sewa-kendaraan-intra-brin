@@ -2,7 +2,7 @@ import 'package:vehicle_rental/features/civitas/domain/entities/sewa_kendaraan.d
 
 abstract class SewaKendaraanRepository {
   Future<DataPemohon> getDataPemohon();
-  Future<void> submitSewaKendaraan(SewaKendaraan request);
+  Future<void> submitSewaKendaraan(SewaKendaraan request, {required String id});
   Stream<SewaKendaraan?> watchStatus();
   Future<List<SewaKendaraan>> getHistory();
   Future<void> updateSewaKendaraan({

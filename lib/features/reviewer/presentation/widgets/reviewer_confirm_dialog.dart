@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:vehicle_rental/features/reviewer/presentation/providers/reviewer_provider.dart';
 
 class ReviewerConfirmDialog {
@@ -84,8 +84,7 @@ class ReviewerConfirmDialog {
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
-                        final success = await context
-                            .read<ReviewerProvider>()
+                        final success = await Get.find<ReviewerController>()
                             .approve(id);
                         if (context.mounted) {
                           _showSnackbar(
@@ -221,8 +220,7 @@ class ReviewerConfirmDialog {
                       onPressed: () async {
                         if (alasanController.text.isEmpty) return;
                         Navigator.pop(context);
-                        final success = await context
-                            .read<ReviewerProvider>()
+                        final success = await Get.find<ReviewerController>()
                             .reject(id, alasanController.text);
                         if (context.mounted) {
                           _showSnackbar(

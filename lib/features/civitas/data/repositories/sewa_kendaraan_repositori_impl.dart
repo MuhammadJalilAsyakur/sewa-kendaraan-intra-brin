@@ -14,7 +14,10 @@ class SewaKendaraanRepositoriImpl implements SewaKendaraanRepository {
   }
 
   @override
-  Future<void> submitSewaKendaraan(SewaKendaraan request) async {
+  Future<void> submitSewaKendaraan(
+    SewaKendaraan request, {
+    required String id,
+  }) async {
     final model = SewaKendaraanModel(
       dataPemohon: request.dataPemohon,
       administrasiInfo: request.administrasiInfo,
@@ -25,7 +28,7 @@ class SewaKendaraanRepositoriImpl implements SewaKendaraanRepository {
       dokumenPersyaratan: request.dokumenPersyaratan,
     );
 
-    await remoteDataSource.submitSewaKendaraan(model);
+    await remoteDataSource.submitSewaKendaraan(model, id: id);
   }
 
   @override

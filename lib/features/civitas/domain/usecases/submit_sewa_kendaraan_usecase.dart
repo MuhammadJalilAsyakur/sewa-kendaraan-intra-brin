@@ -6,7 +6,7 @@ class SubmitSewaKendaraanUsecase {
 
   SubmitSewaKendaraanUsecase({required this.repository});
 
-  Future<void> call(SewaKendaraan request) async {
+  Future<void> call(SewaKendaraan request, {required String id}) async {
     //validasi bagian administrasi dan info
     final administrasiInfo = request.administrasiInfo;
 
@@ -40,7 +40,8 @@ class SubmitSewaKendaraanUsecase {
       throw Exception('Nomor ponsel penanggung jawab wajib diisi');
     }
 
-    if (dataPenanggungJawab.email == null || dataPenanggungJawab.email!.isEmpty) {
+    if (dataPenanggungJawab.email == null ||
+        dataPenanggungJawab.email!.isEmpty) {
       throw Exception('Email penanggung jawab wajib diisi');
     }
 
@@ -93,6 +94,6 @@ class SubmitSewaKendaraanUsecase {
       throw Exception('Dokumen persyaratan wajib diisi');
     }
 
-    return repository.submitSewaKendaraan(request);
+    return repository.submitSewaKendaraan(request, id: id);
   }
 }

@@ -8,7 +8,10 @@ import 'package:rxdart/rxdart.dart';
 
 abstract class SewaKendaraanRemoteDatasource {
   Future<DataPemohon> getDataPemohon();
-  Future<void> submitSewaKendaraan(SewaKendaraanModel model);
+  Future<void> submitSewaKendaraan(
+    SewaKendaraanModel model, {
+    required String id,
+  });
   Future<void> updateSewaKendaraan(String id, SewaKendaraan data);
 }
 
@@ -92,13 +95,16 @@ class SewaKendaraanDataSourceImpl implements SewaKendaraanRemoteDatasource {
   // }
 
   @override
-  Future<void> submitSewaKendaraan(SewaKendaraanModel model) async {
+  Future<void> submitSewaKendaraan(
+    SewaKendaraanModel model, {
+    required String id,
+  }) async {
     await Future.delayed(const Duration(seconds: 2));
 
     // Simulate printing payload to console
     print("Submitting to API: ${model.toJson()}");
     SubmissionStore().addSubmission(
-      id: 'SK-${DateTime.now().millisecondsSinceEpoch}',
+      id: id,
       namaPemohon: model.dataPemohon.nama,
       satuanKerja: model.dataPemohon.satuanKerja,
       keperluan: model.kegiatanDanTujuan.keperluan ?? '-',

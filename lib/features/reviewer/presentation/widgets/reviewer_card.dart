@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:vehicle_rental/features/reviewer/domain/entities/reviewer_item.dart';
 import 'package:vehicle_rental/features/reviewer/presentation/pages/reviewer_detail_page.dart';
 import 'package:vehicle_rental/features/reviewer/presentation/providers/reviewer_provider.dart';
@@ -137,8 +137,7 @@ class ReviewerCard extends StatelessWidget {
                     label: 'PDF',
                     icon: Icons.picture_as_pdf_outlined,
                     color: Colors.grey.shade600,
-                    onTap: () =>
-                        context.read<ReviewerProvider>().getPdf(item.id),
+                    onTap: () => Get.find<ReviewerController>().getPdf(item.id),
                   ),
                 ],
                 // if (item.showApprove) ...[

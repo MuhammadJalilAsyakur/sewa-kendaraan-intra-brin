@@ -1,25 +1,27 @@
-import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:vehicle_rental/core/shared/submission_store.dart';
 import 'package:vehicle_rental/features/civitas/domain/entities/sewa_kendaraan.dart';
 import 'package:vehicle_rental/features/civitas/domain/entities/tracking_item.dart';
 import 'package:vehicle_rental/features/civitas/domain/repositories/tracking_repository.dart';
+import 'package:vehicle_rental/features/reviewer/presentation/providers/reviewer_provider.dart';
 
 enum TrackingFilter { all, pending, approved, rejected }
 
-class TrackingProvider extends ChangeNotifier {
+class TrackingController extends GetxController {
   final TrackingRepository repository;
 
-  TrackingProvider({required this.repository});
+  TrackingController({required this.repository});
 
-  List<TrackingItem> _trackingItems = [];
+  final _trackingItems = <TrackingItem>[].obs;
   List<TrackingItem> get trackingItems => _trackingItems;
 
-  TrackingItem? _selectedItem;
-  TrackingItem? get selectedItem => _selectedItem;
+  final _selectedItem = Rxn<TrackingItem>();
+  TrackingItem? get selectedItem => _selectedItem.value;
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  final _isLoading = false.obs;
+  bool get isLoading => _isLoading.value;
+
   TrackingItem? getById(String id) {
     try {
       return _trackingItems.firstWhere((e) => e.id == id);
@@ -33,14 +35,14 @@ class TrackingProvider extends ChangeNotifier {
     return "${DateFormat('dd/MM/yyyy HH:mm').format(start)} S/D ${DateFormat('dd/MM/yyyy HH:mm').format(end)}";
   }
 
-  String? _error;
-  String? get error => _error;
+  final _error = Rxn<String>();
+  String? get error => _error.value;
 
-  TrackingFilter _currentFilter = TrackingFilter.all;
-  TrackingFilter get currentFilter => _currentFilter;
+  final _currentFilter = TrackingFilter.all.obs;
+  TrackingFilter get currentFilter => _currentFilter.value;
 
   List<TrackingItem> get filteredItems {
-    switch (_currentFilter) {
+    switch (_currentFilter.value) {
       case TrackingFilter.pending:
         return _trackingItems
             .where((item) => item.status == 'Menunggu Persetujuan')
@@ -55,7 +57,7 @@ class TrackingProvider extends ChangeNotifier {
             .toList();
       case TrackingFilter.all:
       default:
-        return _trackingItems;
+        return _trackingItems.toList();
     }
   }
 
@@ -68,9 +70,8 @@ class TrackingProvider extends ChangeNotifier {
     required String periode,
     required SewaKendaraan detailData,
   }) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    _isLoading.value = true;
+    _error.value = null;
 
     try {
       final trackingItem = TrackingItem(
@@ -86,15 +87,13 @@ class TrackingProvider extends ChangeNotifier {
       _trackingItems.insert(0, trackingItem);
 
       print("✅ Tracking item created: ${trackingItem.id}");
-      notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error.value = e.toString();
       print("❌ Error creating tracking: $e");
       return false;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _isLoading.value = false;
     }
   }
 
@@ -110,51 +109,42 @@ class TrackingProvider extends ChangeNotifier {
         newData.waktuPeminjaman.tanggalSelesaiPinjam,
       ),
     );
-
-    notifyListeners();
   }
 
   Future<void> loadTrackingList() async {
-    _isLoading = true;
-    notifyListeners();
+    _isLoading.value = true;
 
     try {
       final items = await repository.getTrackingList();
 
       if (_trackingItems.isEmpty) {
-        _trackingItems = items;
+        _trackingItems.assignAll(items);
       }
-      // kalau sudah ada → JANGAN TIMPA
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _isLoading.value = false;
     }
   }
 
   Future<void> loadTrackingDetail(String id) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    _isLoading.value = true;
+    _error.value = null;
 
     try {
-      // cari dari list lokal dulu
       final localItem = _trackingItems.firstWhere(
         (e) => e.id == id,
         orElse: () => throw Exception('Tracking item not found'),
       );
-      _selectedItem = localItem;
+      _selectedItem.value = localItem;
       print("✅ Loaded detail from local for ID: $id");
     } catch (e) {
-      // kalau tidak ada di lokal, baru hit repository
       try {
-        _selectedItem = await repository.getTrackingDetail(id);
+        _selectedItem.value = await repository.getTrackingDetail(id);
       } catch (e) {
-        _error = e.toString();
+        _error.value = e.toString();
         print('❌ Error loading detail: $e');
       }
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _isLoading.value = false;
     }
   }
 
@@ -164,17 +154,21 @@ class TrackingProvider extends ChangeNotifier {
 
       _trackingItems.removeWhere((item) => item.id == id);
 
-      if (_selectedItem?.id == id) {
-        _selectedItem = null;
+      if (_selectedItem.value?.id == id) {
+        _selectedItem.value = null;
       }
 
       SubmissionStore().removeSubmission(id);
 
-      notifyListeners();
+      // Refresh reviewer list so cancelled item disappears there too
+      if (Get.isRegistered<ReviewerController>()) {
+        Get.find<ReviewerController>().loadReviewerList();
+      }
+
       print("✅ Cancelled submission ID: $id");
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error.value = e.toString();
       print("❌ Error canceling submission: $e");
       return false;
     }
@@ -186,15 +180,14 @@ class TrackingProvider extends ChangeNotifier {
       print("✅ PDF downloaded to: $path");
       return path;
     } catch (e) {
-      _error = e.toString();
+      _error.value = e.toString();
       print('❌ Error downloading PDF: $e');
       return null;
     }
   }
 
   void setFilter(TrackingFilter filter) {
-    _currentFilter = filter;
-    notifyListeners();
+    _currentFilter.value = filter;
   }
 
   int getPendingCount() => _trackingItems
@@ -208,8 +201,7 @@ class TrackingProvider extends ChangeNotifier {
       _trackingItems.where((item) => item.status == 'Ditolak').length;
 
   void clearError() {
-    _error = null;
-    notifyListeners();
+    _error.value = null;
   }
 
   Future<void> refresh() async {

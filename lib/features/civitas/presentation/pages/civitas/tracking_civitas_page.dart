@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:vehicle_rental/features/civitas/presentation/pages/civitas/sewa_kendaraan_page.dart';
 import 'package:vehicle_rental/features/civitas/presentation/pages/civitas/tracking_detail_page.dart';
 import 'package:vehicle_rental/features/civitas/presentation/providers/sewa_kendaraan_provider.dart';
@@ -15,11 +15,13 @@ class TrackingPage extends StatefulWidget {
 }
 
 class _TrackingPageState extends State<TrackingPage> {
+  final TrackingController _trackingController = Get.find<TrackingController>();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TrackingProvider>().loadTrackingList();
+      _trackingController.loadTrackingList();
     });
   }
 
@@ -45,7 +47,7 @@ class _TrackingPageState extends State<TrackingPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: Colors.black54),
-            onPressed: () => context.read<TrackingProvider>().refresh(),
+            onPressed: () => _trackingController.refresh(),
           ),
         ],
       ),
@@ -55,141 +57,137 @@ class _TrackingPageState extends State<TrackingPage> {
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Consumer<TrackingProvider>(
-              builder: (context, provider, _) {
-                final filterLabels = {
-                  TrackingFilter.all: 'Semua Status',
-                  TrackingFilter.pending: 'Menunggu',
-                  TrackingFilter.approved: 'Disetujui',
-                  TrackingFilter.rejected: 'Ditolak',
-                };
-                return Row(
-                  children: [
-                    Expanded(
-                      child: TrackingDropdownFilter<TrackingFilter>(
-                        value: provider.currentFilter,
-                        items: TrackingFilter.values.map((f) {
-                          return DropdownMenuItem(
-                            value: f,
-                            child: Text(filterLabels[f] ?? 'Semua'),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) provider.setFilter(val);
-                        },
-                      ),
+            child: Obx(() {
+              final filterLabels = {
+                TrackingFilter.all: 'Semua Status',
+                TrackingFilter.pending: 'Menunggu',
+                TrackingFilter.approved: 'Disetujui',
+                TrackingFilter.rejected: 'Ditolak',
+              };
+              return Row(
+                children: [
+                  Expanded(
+                    child: TrackingDropdownFilter<TrackingFilter>(
+                      value: _trackingController.currentFilter,
+                      items: TrackingFilter.values.map((f) {
+                        return DropdownMenuItem(
+                          value: f,
+                          child: Text(filterLabels[f] ?? 'Semua'),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) _trackingController.setFilter(val);
+                      },
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TrackingDropdownFilter<String>(
-                        value: 'Semua Waktu',
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Semua Waktu',
-                            child: Text('Semua Waktu'),
-                          ),
-                        ],
-                        onChanged: (_) {},
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TrackingDropdownFilter<String>(
+                      value: 'Semua Waktu',
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Semua Waktu',
+                          child: Text('Semua Waktu'),
+                        ),
+                      ],
+                      onChanged: (_) {},
                     ),
-                  ],
-                );
-              },
-            ),
+                  ),
+                ],
+              );
+            }),
           ),
 
           // List
           Expanded(
-            child: Consumer<TrackingProvider>(
-              builder: (context, provider, _) {
-                if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            child: Obx(() {
+              if (_trackingController.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                if (provider.error != null) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 48,
-                          color: Colors.red.shade300,
+              if (_trackingController.error != null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red.shade300,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Terjadi Kesalahan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Terjadi Kesalahan',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _trackingController.error!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD32F2F),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          provider.error!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey.shade500),
+                        onPressed: () => _trackingController.refresh(),
+                        icon: const Icon(Icons.refresh, color: Colors.white),
+                        label: const Text(
+                          'Coba Lagi',
+                          style: TextStyle(color: Colors.white),
                         ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD32F2F),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () => provider.refresh(),
-                          icon: const Icon(Icons.refresh, color: Colors.white),
-                          label: const Text(
-                            'Coba Lagi',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final trackingList = provider.filteredItems;
-
-                if (trackingList.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inbox_outlined,
-                          size: 56,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Tidak ada data tracking',
-                          style: TextStyle(color: Colors.grey.shade500),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: trackingList.length,
-                  itemBuilder: (context, index) {
-                    final item = trackingList[index];
-                    return TrackingCard(
-                      trackingItem: item,
-                      onEdit: () => _handleEdit(context, item.id),
-                      onCancel: () => _showCancelDialog(context, item.id),
-                      onViewPdf: () => _handleDownloadPdf(context, item.id),
-                      onViewDetail: () => _handleViewDetail(context, item.id),
-                    );
-                  },
+                      ),
+                    ],
+                  ),
                 );
-              },
-            ),
+              }
+
+              final trackingList = _trackingController.filteredItems;
+
+              if (trackingList.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inbox_outlined,
+                        size: 56,
+                        color: Colors.grey.shade300,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Tidak ada data tracking',
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: trackingList.length,
+                itemBuilder: (context, index) {
+                  final item = trackingList[index];
+                  return TrackingCard(
+                    trackingItem: item,
+                    onEdit: () => _handleEdit(context, item.id),
+                    onCancel: () => _showCancelDialog(context, item.id),
+                    onViewPdf: () => _handleDownloadPdf(context, item.id),
+                    onViewDetail: () => _handleViewDetail(context, item.id),
+                  );
+                },
+              );
+            }),
           ),
         ],
       ),
@@ -197,12 +195,11 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 
   void _handleEdit(BuildContext context, String id) {
-    final sewaProvider = context.read<SewaKendaraanProvider>();
-    final trackingProvider = context.read<TrackingProvider>();
-    final detail = trackingProvider.getById(id);
+    final sewaController = Get.find<SewaKendaraanController>();
+    final detail = _trackingController.getById(id);
 
     if (detail?.detailData != null) {
-      sewaProvider.loadForEdit(detail!.detailData!, id);
+      sewaController.loadForEdit(detail!.detailData!, id);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const SewaKendaraanPage()),
@@ -296,8 +293,7 @@ class _TrackingPageState extends State<TrackingPage> {
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
-                        final success = await context
-                            .read<TrackingProvider>()
+                        final success = await _trackingController
                             .cancelSubmission(id);
                         if (context.mounted) {
                           _showSnackbar(
@@ -348,7 +344,7 @@ class _TrackingPageState extends State<TrackingPage> {
       ),
     );
 
-    final path = await context.read<TrackingProvider>().downloadPdf(id);
+    final path = await _trackingController.downloadPdf(id);
     if (context.mounted) {
       ScaffoldMessenger.of(context).clearSnackBars();
       _showSnackbar(
@@ -366,12 +362,12 @@ class _TrackingPageState extends State<TrackingPage> {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    await context.read<TrackingProvider>().loadTrackingDetail(id);
+    await _trackingController.loadTrackingDetail(id);
 
     if (context.mounted) {
       Navigator.pop(context); // tutup loading
 
-      final selected = context.read<TrackingProvider>().selectedItem;
+      final selected = _trackingController.selectedItem;
       if (selected != null) {
         Navigator.push(
           context,

@@ -1,50 +1,61 @@
 // ignore_for_file: unnecessary_string_interpolations
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:vehicle_rental/features/civitas/domain/entities/sewa_kendaraan.dart';
 import 'package:vehicle_rental/features/civitas/domain/repositories/sewa_kendaraan_repository.dart';
 import 'package:file_picker/file_picker.dart';
 
-class SewaKendaraanProvider extends ChangeNotifier {
+class SewaKendaraanController extends GetxController {
   final SewaKendaraanRepository repository;
 
-  SewaKendaraanProvider({required this.repository}) {
+  SewaKendaraanController({required this.repository}) {
+    _administrasiInfo = AdministrasiInfo(tanggalPermohonan: DateTime.now()).obs;
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
     _loadDatPemohon();
   }
 
-  bool _isEditMode = false;
-  String? _editingId;
+  final _isEditMode = false.obs;
+  final _editingId = Rxn<String>();
 
-  bool get isEditMode => _isEditMode;
-  String? get editingId => _editingId;
+  bool get isEditMode => _isEditMode.value;
+  String? get editingId => _editingId.value;
 
-  int _currentStep = 0;
-  bool _isLoading = false;
-  String? _error;
+  final _currentStep = 0.obs;
+  final _isLoading = false.obs;
+  final _error = Rxn<String>();
 
-  DataPemohon? _dataPemohon;
-  AdministrasiInfo _administrasiInfo = AdministrasiInfo(
-    tanggalPermohonan: DateTime.now(),
-  );
-  DataPenanggungJawab _dataPenanggungJawab = const DataPenanggungJawab();
-  KegiatanDanTujuan _kegiatanDanTujuan = const KegiatanDanTujuan();
-  WaktuPeminjaman _waktuPeminjaman = const WaktuPeminjaman();
-  DataPenumpangDanPengemudi _dataPenumpangDanPengemudi =
-      const DataPenumpangDanPengemudi();
-  DokumenPersyaratan _dokumenPersyaratan = const DokumenPersyaratan();
+  final _dataPemohon = Rxn<DataPemohon>();
+  late final Rx<AdministrasiInfo> _administrasiInfo;
+  final _dataPenanggungJawab = const DataPenanggungJawab().obs;
+  final _kegiatanDanTujuan = const KegiatanDanTujuan().obs;
+  final _waktuPeminjaman = const WaktuPeminjaman().obs;
+  final _dataPenumpangDanPengemudi = const DataPenumpangDanPengemudi().obs;
+  final _dokumenPersyaratan = const DokumenPersyaratan().obs;
 
-  bool get isLoading => _isLoading;
-  int get currentStep => _currentStep;
-  String? get error => _error;
-  DataPemohon? get dataPemohon => _dataPemohon;
-  AdministrasiInfo get administrasiInfo => _administrasiInfo;
-  DataPenanggungJawab get dataPenanggungJawab => _dataPenanggungJawab;
-  KegiatanDanTujuan get kegiatanDanTujuan => _kegiatanDanTujuan;
-  WaktuPeminjaman get waktuPeminjaman => _waktuPeminjaman;
-  DataPenumpangDanPengemudi get dataPenumpangDanPengemudi =>
+  // Expose Rx objects for listening from outside (e.g., Worker/ever)
+  Rx<AdministrasiInfo> get administrasiInfoRx => _administrasiInfo;
+  Rx<DataPenanggungJawab> get dataPenanggungJawabRx => _dataPenanggungJawab;
+  Rx<KegiatanDanTujuan> get kegiatanDanTujuanRx => _kegiatanDanTujuan;
+  Rx<DataPenumpangDanPengemudi> get dataPenumpangDanPengemudiRx =>
       _dataPenumpangDanPengemudi;
-  DokumenPersyaratan get dokumenPersyaratan => _dokumenPersyaratan;
+
+  bool get isLoading => _isLoading.value;
+  int get currentStep => _currentStep.value;
+  String? get error => _error.value;
+  DataPemohon? get dataPemohon => _dataPemohon.value;
+  AdministrasiInfo get administrasiInfo => _administrasiInfo.value;
+  DataPenanggungJawab get dataPenanggungJawab => _dataPenanggungJawab.value;
+  KegiatanDanTujuan get kegiatanDanTujuan => _kegiatanDanTujuan.value;
+  WaktuPeminjaman get waktuPeminjaman => _waktuPeminjaman.value;
+  DataPenumpangDanPengemudi get dataPenumpangDanPengemudi =>
+      _dataPenumpangDanPengemudi.value;
+  DokumenPersyaratan get dokumenPersyaratan => _dokumenPersyaratan.value;
 
   String _formatRange(DateTime? start, DateTime? end) {
     if (start == null || end == null) return "-";
@@ -52,76 +63,64 @@ class SewaKendaraanProvider extends ChangeNotifier {
   }
 
   Future<void> _loadDatPemohon() async {
-    _isLoading = true;
-    notifyListeners();
+    _isLoading.value = true;
     try {
-      _dataPemohon = await repository.getDataPemohon();
+      _dataPemohon.value = await repository.getDataPemohon();
     } catch (e) {
       print('error loading data pemohon: $e');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _isLoading.value = false;
     }
   }
 
   void nextStep() {
-    if (_currentStep < 2) {
-      _currentStep++;
-      notifyListeners();
+    if (_currentStep.value < 2) {
+      _currentStep.value++;
     }
   }
 
   void previousStep() {
-    if (_currentStep > 0) {
-      _currentStep--;
-      notifyListeners();
+    if (_currentStep.value > 0) {
+      _currentStep.value--;
     }
   }
 
   void goToStep(int step) {
     if (step >= 0 && step <= 2) {
-      _currentStep = step;
-      notifyListeners();
+      _currentStep.value = step;
     }
   }
 
   void updateAdminsitrasiInfo(AdministrasiInfo info) {
-    _administrasiInfo = info;
-    notifyListeners();
+    _administrasiInfo.value = info;
   }
 
   void updateDataPenanggungJawab(DataPenanggungJawab data) {
-    _dataPenanggungJawab = data;
-    notifyListeners();
+    _dataPenanggungJawab.value = data;
   }
 
   void updateKegiatanDanTujuan(KegiatanDanTujuan kegiatan) {
-    _kegiatanDanTujuan = kegiatan;
-    print('kegiatanDanTujuan updated: $_kegiatanDanTujuan');
-    notifyListeners();
+    _kegiatanDanTujuan.value = kegiatan;
+    print('kegiatanDanTujuan updated: ${_kegiatanDanTujuan.value}');
   }
 
   void updateWaktuPeminjaman(WaktuPeminjaman waktu) {
-    _waktuPeminjaman = waktu;
-    notifyListeners();
+    _waktuPeminjaman.value = waktu;
   }
 
   void updateInfoPenumpang(DataPenumpangDanPengemudi data) {
-    _dataPenumpangDanPengemudi = data;
-    notifyListeners();
+    _dataPenumpangDanPengemudi.value = data;
   }
 
   void updateDokumenPersyaratan(DokumenPersyaratan dokumen) {
-    _dokumenPersyaratan = dokumen;
-    notifyListeners();
+    _dokumenPersyaratan.value = dokumen;
   }
 
   Future<Map<String, dynamic>?> submit() async {
-    if (_isLoading) return null;
+    if (_isLoading.value) return null;
 
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    _isLoading.value = true;
+    _error.value = null;
 
     try {
       final requestData = SewaKendaraan(
@@ -133,22 +132,22 @@ class SewaKendaraanProvider extends ChangeNotifier {
         dataPenumpangDanPengemudi: dataPenumpangDanPengemudi,
         dokumenPersyaratan: dokumenPersyaratan,
       );
-      if (_isEditMode && _editingId != null) {
+      final id = _isEditMode.value
+          ? _editingId.value!
+          : 'SK-${DateTime.now().millisecondsSinceEpoch}';
+
+      if (_isEditMode.value && _editingId.value != null) {
         await repository.updateSewaKendaraan(
-          id: _editingId!,
+          id: _editingId.value!,
           data: requestData,
         );
       } else {
-        await repository.submitSewaKendaraan(requestData);
+        await repository.submitSewaKendaraan(requestData, id: id);
       }
-
-      final id = _isEditMode
-          ? _editingId!
-          : 'SK-${DateTime.now().millisecondsSinceEpoch}';
 
       final trackingData = {
         'id': id,
-        'isEdit': _isEditMode,
+        'isEdit': _isEditMode.value,
         'status': 'Menunggu Persetujuan',
         'tanggalPengajuan':
             administrasiInfo.tanggalPermohonan ?? DateTime.now(),
@@ -165,27 +164,24 @@ class SewaKendaraanProvider extends ChangeNotifier {
 
       return trackingData;
     } catch (e) {
-      _error = e.toString();
+      _error.value = e.toString();
       print("❌ Error pas submit: $e");
       return null;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _isLoading.value = false;
     }
   }
 
   void loadForEdit(SewaKendaraan data, String id) {
-    _isEditMode = true;
-    _editingId = id;
+    _isEditMode.value = true;
+    _editingId.value = id;
 
-    _administrasiInfo = data.administrasiInfo;
-    _dataPenanggungJawab = data.dataPenanggungJawab;
-    _kegiatanDanTujuan = data.kegiatanDanTujuan;
-    _waktuPeminjaman = data.waktuPeminjaman;
-    _dataPenumpangDanPengemudi = data.dataPenumpangDanPengemudi;
-    _dokumenPersyaratan = data.dokumenPersyaratan;
-
-    notifyListeners();
+    _administrasiInfo.value = data.administrasiInfo;
+    _dataPenanggungJawab.value = data.dataPenanggungJawab;
+    _kegiatanDanTujuan.value = data.kegiatanDanTujuan;
+    _waktuPeminjaman.value = data.waktuPeminjaman;
+    _dataPenumpangDanPengemudi.value = data.dataPenumpangDanPengemudi;
+    _dokumenPersyaratan.value = data.dokumenPersyaratan;
   }
 
   Future<void> pickSuratTugas(BuildContext context) async {
@@ -211,17 +207,17 @@ class SewaKendaraanProvider extends ChangeNotifier {
   }
 
   void resetForm() {
-    _isEditMode = false;
-    _editingId = null;
+    _isEditMode.value = false;
+    _editingId.value = null;
 
-    _administrasiInfo = AdministrasiInfo(tanggalPermohonan: DateTime.now());
-    _dataPenanggungJawab = const DataPenanggungJawab();
-    _kegiatanDanTujuan = const KegiatanDanTujuan();
-    _waktuPeminjaman = const WaktuPeminjaman();
-    _dataPenumpangDanPengemudi = const DataPenumpangDanPengemudi();
-    _dokumenPersyaratan = const DokumenPersyaratan();
-    _currentStep = 0;
-
-    notifyListeners();
+    _administrasiInfo.value = AdministrasiInfo(
+      tanggalPermohonan: DateTime.now(),
+    );
+    _dataPenanggungJawab.value = const DataPenanggungJawab();
+    _kegiatanDanTujuan.value = const KegiatanDanTujuan();
+    _waktuPeminjaman.value = const WaktuPeminjaman();
+    _dataPenumpangDanPengemudi.value = const DataPenumpangDanPengemudi();
+    _dokumenPersyaratan.value = const DokumenPersyaratan();
+    _currentStep.value = 0;
   }
 }

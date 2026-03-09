@@ -22,26 +22,7 @@ class ReviewerRemoteDatasourceImpl implements ReviewerRemoteDatasource {
     // dummy dulu sampai backend siap
     await Future.delayed(const Duration(milliseconds: 500));
     final submissions = SubmissionStore().submissions;
-    print('📦 SubmissionStore size: ${submissions.length}'); // tambah ini
-
-    if (submissions.isEmpty) {
-      return [
-        ReviewerItemModel(
-          id: 'dummy-1',
-          status: 'Menunggu Persetujuan',
-          tanggalPengajuan: DateTime.now(),
-          judul: 'Permohonan Peminjaman Kendaraan',
-          namaPemohon: 'Afrido Prayogi',
-          satuanKerja: 'Pusat Data Dan Informasi',
-          keperluan: 'Dinas Luar Kota',
-          periode: '26/02/2026 08:00 S/D 27/02/2026 08:00',
-          showApprove: true,
-          showReject: true,
-          showDetail: true,
-          showPdf: false,
-        ),
-      ];
-    }
+    print('📦 SubmissionStore size: ${submissions.length}');
 
     return submissions
         .map(

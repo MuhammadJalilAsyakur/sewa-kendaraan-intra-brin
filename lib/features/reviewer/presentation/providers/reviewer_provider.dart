@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:vehicle_rental/features/reviewer/domain/entities/reviewer_item.dart';
 import 'package:vehicle_rental/features/reviewer/domain/usecases/get_reviewer_list.dart';
 import 'package:vehicle_rental/features/reviewer/domain/usecases/get_reviewer_by_status.dart';
@@ -6,65 +6,66 @@ import 'package:vehicle_rental/features/reviewer/domain/usecases/approve_submiss
 import 'package:vehicle_rental/features/reviewer/domain/usecases/reject_submission.dart';
 import 'package:vehicle_rental/features/reviewer/domain/usecases/download_pdf.dart';
 
-class ReviewerProvider extends ChangeNotifier {
+class ReviewerController extends GetxController {
   final GetReviewerList getReviewerList;
   final GetReviewerByStatus getReviewerByStatus;
   final ApproveSubmission approveSubmission;
   final RejectSubmission rejectSubmission;
   final DownloadPdf downloadPdf;
 
-  ReviewerProvider({
+  ReviewerController({
     required this.getReviewerList,
     required this.getReviewerByStatus,
     required this.approveSubmission,
     required this.rejectSubmission,
     required this.downloadPdf,
-  }) {
+  });
+
+  @override
+  void onInit() {
+    super.onInit();
     loadReviewerList();
   }
 
-  List<ReviewerItem> _reviewerList = [];
-  bool _isLoading = false;
-  String? _error;
-  String _selectedStatus = 'Semua Status';
-  String _selectedWaktu = 'Semua Waktu';
+  final _reviewerList = <ReviewerItem>[].obs;
+  final _isLoading = false.obs;
+  final _error = Rxn<String>();
+  final _selectedStatus = 'Semua Status'.obs;
+  final _selectedWaktu = 'Semua Waktu'.obs;
 
   List<ReviewerItem> get reviewerList => _reviewerList;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  String get selectedStatus => _selectedStatus;
-  String get selectedWaktu => _selectedWaktu;
+  bool get isLoading => _isLoading.value;
+  String? get error => _error.value;
+  String get selectedStatus => _selectedStatus.value;
+  String get selectedWaktu => _selectedWaktu.value;
 
   List<ReviewerItem> get filteredList {
     return _reviewerList.where((item) {
       final statusMatch =
-          _selectedStatus == 'Semua Status' || item.status == _selectedStatus;
+          _selectedStatus.value == 'Semua Status' ||
+          item.status == _selectedStatus.value;
       return statusMatch;
     }).toList();
   }
 
   Future<void> loadReviewerList() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    _isLoading.value = true;
+    _error.value = null;
     try {
-      _reviewerList = await getReviewerList();
+      _reviewerList.assignAll(await getReviewerList());
     } catch (e) {
-      _error = e.toString();
+      _error.value = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _isLoading.value = false;
     }
   }
 
   Future<void> filterByStatus(String status) async {
-    _selectedStatus = status;
-    notifyListeners();
+    _selectedStatus.value = status;
   }
 
   void setSelectedWaktu(String waktu) {
-    _selectedWaktu = waktu;
-    notifyListeners();
+    _selectedWaktu.value = waktu;
   }
 
   Future<bool> approve(String id) async {
@@ -73,8 +74,7 @@ class ReviewerProvider extends ChangeNotifier {
       await loadReviewerList();
       return true;
     } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+      _error.value = e.toString();
       return false;
     }
   }
@@ -85,8 +85,7 @@ class ReviewerProvider extends ChangeNotifier {
       await loadReviewerList();
       return true;
     } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+      _error.value = e.toString();
       return false;
     }
   }
@@ -95,8 +94,7 @@ class ReviewerProvider extends ChangeNotifier {
     try {
       return await downloadPdf(id);
     } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+      _error.value = e.toString();
       return null;
     }
   }
